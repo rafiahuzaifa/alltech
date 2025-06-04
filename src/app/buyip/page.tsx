@@ -275,37 +275,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Blogs Section with Hover Effects */}
-      <section className="py-16 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={sectionVariants}
-            className="text-3xl font-bold text-center mb-12"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
-          >
-            Latest Blogs
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {["Blog Title 1", "Blog Title 2", "Blog Title 3"].map((title, index) => (
-              <motion.div
-                key={index}
-                initial="initial"
-                whileHover="hover"
-                variants={cardVariants}
-                className="p-6 rounded-lg shadow-md bg-white"
-              >
-                <h3 className="text-xl font-semibold mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>{title}</h3>
-                <p className="text-gray-600" style={{ fontFamily: "'Roboto', sans-serif" }}>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+     
 
       {/* Buy IP Request Form */}
       <section className="py-16">
