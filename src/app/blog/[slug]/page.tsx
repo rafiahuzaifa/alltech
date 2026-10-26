@@ -7,6 +7,9 @@ import { LuArrowLeft, LuArrowRight, LuCalendar, LuClock, LuUser } from "react-ic
 import PageHero from "@/components/ui/PageHero";
 import CtaBand from "@/components/ui/CtaBand";
 import JsonLd from "@/components/site/JsonLd";
+import ArticleBody from "@/components/blog/ArticleBody";
+import FaqAccordion from "@/components/ui/FaqAccordion";
+import { faqLd } from "@/lib/seo";
 import { excerpt, getPost, getPosts, readingTime } from "@/lib/sanity";
 import { SITE_URL, site } from "@/lib/site";
 import { urlFor } from "@/sanity/lib/client";
@@ -24,10 +27,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Article not found", robots: { index: false } };
-  const description = excerpt(post.plain, 155);
+  const description = post.description || excerpt(post.plain, 155);
   return {
     title: post.title,
     description,
+    keywords: post.keywords,
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       type: "article",
@@ -46,7 +50,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 const components: PortableTextComponents = {
   marks: {
     link: ({ children, value }) => {
-      const href: string = value?.href || "#";
+      let href: string = value?.href || "#";
+      // Editors sometimes paste "www.example.com" or "http:www.example.com", which browsers can resolve as relative paths.
+      if (/^www\./i.test(href)) href = `https://${href}`;
+      href = href.replace(/^(https?):(?!\/\/)/i, "$1://");
       const external = /^https?:\/\//.test(href);
       return (
         <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
@@ -81,7 +88,8 @@ export default async function BlogPost({ params }: Params) {
           "@context": "https://schema.org",
           "@type": "BlogPosting",
           headline: post.title,
-          description: excerpt(post.plain, 155),
+          description: post.description || excerpt(post.plain, 155),
+          keywords: post.keywords?.join(", "),
           datePublished: post.publishedAt,
           dateModified: post.updatedAt || post.publishedAt,
           author: post.author ? { "@type": "Person", name: post.author } : { "@type": "Organization", name: site.name },
@@ -113,8 +121,16 @@ export default async function BlogPost({ params }: Params) {
           </div>
         )}
         <div className="prose-article">
-          <PortableText value={post.body} components={components} />
+          {post.sections ? <ArticleBody sections={post.sections} /> : post.body && <PortableText value={post.body} components={components} />}
         </div>
+
+        {post.faqs && post.faqs.length > 0 && (
+          <section className="mt-14" aria-labelledby="article-faq">
+            <JsonLd data={faqLd(post.faqs.map((f) => ({ ...f, tags: [] })))} />
+            <h2 id="article-faq" className="mb-6 text-2xl font-extrabold text-ink sm:text-3xl">Frequently asked questions</h2>
+            <FaqAccordion items={post.faqs.map((f) => ({ ...f, tags: [] }))} />
+          </section>
+        )}
 
         <nav aria-label="More articles" className="mt-16 grid gap-4 border-t border-line pt-10 sm:grid-cols-2">
           {older ? (
