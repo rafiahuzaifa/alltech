@@ -1,72 +1,137 @@
-// File: D:\muneb\final1\all-tech\src\app\blog\[slug]\page.tsx
-import { client } from '@/sanity/lib/client';
-import { POST_QUERY, PREV_NEXT_POSTS_QUERY, POST_SLUGS_QUERY } from '@/sanity/lib/quries';
-import BlogPostClient from './BlogPostClient';
-import { notFound } from 'next/navigation';
-import type { PortableTextBlock } from '@portabletext/types';
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PortableText, type PortableTextComponents } from "next-sanity";
+import { LuArrowLeft, LuArrowRight, LuCalendar, LuClock, LuUser } from "react-icons/lu";
+import PageHero from "@/components/ui/PageHero";
+import CtaBand from "@/components/ui/CtaBand";
+import JsonLd from "@/components/site/JsonLd";
+import { excerpt, getPost, getPosts, readingTime } from "@/lib/sanity";
+import { SITE_URL, site } from "@/lib/site";
+import { urlFor } from "@/sanity/lib/client";
 
-// Type definitions
-interface Slug {
-  current: string;
-  _type: string;
+export const revalidate = 300;
+
+type Params = { params: Promise<{ slug: string }> };
+
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
-interface BlogPost {
-  title: string;
-  slug: Slug;
-  author: string;
-  publishedAt: string;
-  body: PortableTextBlock[];
-}
-
-interface PrevNextPost {
-  title: string;
-  slug: Slug;
-}
-
-export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-
-  // Fetch the blog post
-  const post = await client.fetch<BlogPost | null>(POST_QUERY, { slug });
-  if (!post) {
-    notFound();
-  }
-
-  // Sanitize the post data to avoid circular references or excessive nesting
-  const sanitizedPost = {
+  const post = await getPost(slug);
+  if (!post) return { title: "Article not found", robots: { index: false } };
+  const description = excerpt(post.plain, 155);
+  return {
     title: post.title,
-    slug: { current: post.slug.current, _type: post.slug._type },
-    author: post.author,
-    publishedAt: post.publishedAt,
-    body: post.body, // Ensure this isn't too large or circular
+    description,
+    alternates: { canonical: `/blog/${post.slug}` },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description,
+      url: `/blog/${post.slug}`,
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      authors: post.author ? [post.author] : undefined,
+      images: post.image ? [{ url: `${post.image}?w=1200&h=630&fit=crop&auto=format`, width: 1200, height: 630 }] : undefined,
+    },
+    twitter: { card: "summary_large_image", title: post.title, description },
   };
+}
 
-  // Fetch all posts for prev/next navigation
-  const allPosts = await client.fetch<PrevNextPost[]>(PREV_NEXT_POSTS_QUERY);
-  const currentIndex = allPosts.findIndex(
-    (p) => p.slug.current.toLowerCase() === slug.toLowerCase()
-  );
+const components: PortableTextComponents = {
+  marks: {
+    link: ({ children, value }) => {
+      const href: string = value?.href || "#";
+      const external = /^https?:\/\//.test(href);
+      return (
+        <a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+          {children}
+        </a>
+      );
+    },
+  },
+  types: {
+    image: ({ value }) =>
+      value?.asset ? (
+        <Image src={urlFor(value).width(1400).auto("format").url()} alt={value.alt || ""} width={1400} height={788} className="h-auto w-full rounded-2xl" />
+      ) : null,
+  },
+};
 
-  const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
-  const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+export default async function BlogPost({ params }: Params) {
+  const { slug } = await params;
+  const post = await getPost(slug);
+  if (!post) notFound();
 
-  // Sanitize prev/next posts
-  const sanitizedPrevPost = prevPost ? { title: prevPost.title, slug: prevPost.slug } : null;
-  const sanitizedNextPost = nextPost ? { title: nextPost.title, slug: nextPost.slug } : null;
+  const all = await getPosts();
+  const idx = all.findIndex((p) => p.slug === post.slug);
+  const newer = idx > 0 ? all[idx - 1] : null;
+  const older = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+  const date = new Date(post.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   return (
-    <BlogPostClient
-      post={sanitizedPost}
-      prevPost={sanitizedPrevPost}
-      nextPost={sanitizedNextPost}
-    />
+    <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          description: excerpt(post.plain, 155),
+          datePublished: post.publishedAt,
+          dateModified: post.updatedAt || post.publishedAt,
+          author: post.author ? { "@type": "Person", name: post.author } : { "@type": "Organization", name: site.name },
+          publisher: { "@id": `${SITE_URL}/#organization`, "@type": "Organization", name: site.name, logo: { "@type": "ImageObject", url: `${SITE_URL}${site.logo}` } },
+          mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,
+          image: post.image ? [post.image] : [`${SITE_URL}/opengraph-image`],
+          wordCount: post.plain?.split(/\s+/).length,
+        }}
+      />
+      <PageHero
+        eyebrow="Insights"
+        title={post.title}
+        crumbs={[
+          { name: "Insights", path: "/blog" },
+          { name: post.title, path: `/blog/${post.slug}` },
+        ]}
+      >
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-300">
+          {post.author && <span className="flex items-center gap-2"><LuUser className="h-4 w-4 text-cyan-300" /> {post.author}</span>}
+          <span className="flex items-center gap-2"><LuCalendar className="h-4 w-4 text-cyan-300" /> <time dateTime={post.publishedAt}>{date}</time></span>
+          <span className="flex items-center gap-2"><LuClock className="h-4 w-4 text-cyan-300" /> {readingTime(post.plain)} min read</span>
+        </div>
+      </PageHero>
+
+      <article className="container-x max-w-3xl py-16">
+        {post.image && (
+          <div className="mb-12 overflow-hidden rounded-3xl border border-line">
+            <Image src={`${post.image}?w=1400&auto=format`} alt={post.imageAlt || post.title} width={1400} height={788} priority className="h-auto w-full" />
+          </div>
+        )}
+        <div className="prose-article">
+          <PortableText value={post.body} components={components} />
+        </div>
+
+        <nav aria-label="More articles" className="mt-16 grid gap-4 border-t border-line pt-10 sm:grid-cols-2">
+          {older ? (
+            <Link href={`/blog/${older.slug}`} className="card card-hover p-5">
+              <span className="flex items-center gap-1.5 text-xs text-muted"><LuArrowLeft className="h-3.5 w-3.5" /> Previous</span>
+              <span className="mt-1 block font-semibold text-ink">{older.title}</span>
+            </Link>
+          ) : <span />}
+          {newer && (
+            <Link href={`/blog/${newer.slug}`} className="card card-hover p-5 text-right">
+              <span className="flex items-center justify-end gap-1.5 text-xs text-muted">Next <LuArrowRight className="h-3.5 w-3.5" /></span>
+              <span className="mt-1 block font-semibold text-ink">{newer.title}</span>
+            </Link>
+          )}
+        </nav>
+      </article>
+      <CtaBand />
+    </>
   );
 }
-
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const slugs = await client.fetch<{ slug: string }[]>(POST_SLUGS_QUERY);
-  return slugs.map((item) => ({ slug: item.slug }));
-}
-
-export const revalidate = 60; // ISR every 60 seconds
