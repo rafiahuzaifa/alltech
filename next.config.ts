@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 // Old (pre-redesign) URLs → new SEO-friendly URLs. Permanent (308) so search engines transfer ranking.
+// Redirects that differ only by letter case (/FAQ → /faq) live in src/middleware.ts: Vercel matches
+// config redirects case-insensitively, so here they would redirect /faq to itself forever.
 const legacy: [string, string][] = [
   ["/Aboutus", "/about"],
   ["/aboutus", "/about"],
@@ -9,8 +11,6 @@ const legacy: [string, string][] = [
   ["/Leaseip", "/lease-ipv4"],
   ["/leaseip", "/lease-ipv4"],
   ["/contactus", "/contact"],
-  ["/FAQ", "/faq"],
-  ["/Privacy-Policy", "/privacy-policy"],
   ["/PrivicyPolicy", "/privacy-policy"],
   ["/blog_menu", "/blog"],
   ["/blogs", "/blog"],
