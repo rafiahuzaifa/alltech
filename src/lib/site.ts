@@ -1,4 +1,4 @@
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://alltechcloudservices.com").replace(/\/$/, "");
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.alltechcloudservices.com").replace(/\/$/, "");
 
 export const site = {
   name: "All Tech Cloud Services",

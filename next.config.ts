@@ -38,7 +38,16 @@ const nextConfig: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "cdn.sanity.io" }],
   },
   async redirects() {
-    return legacy.map(([source, destination]) => ({ source, destination, permanent: true }));
+    return [
+      // www is the primary host — send apex traffic there so only one version gets indexed.
+      {
+        source: "/:path*",
+        has: [{ type: "host" as const, value: "alltechcloudservices.com" }],
+        destination: "https://www.alltechcloudservices.com/:path*",
+        permanent: true,
+      },
+      ...legacy.map(([source, destination]) => ({ source, destination, permanent: true })),
+    ];
   },
   async headers() {
     return [
