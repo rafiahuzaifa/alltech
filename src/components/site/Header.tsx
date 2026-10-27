@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
 import { LuMail, LuMenu, LuPhone, LuX, LuArrowRight } from "react-icons/lu";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
+import { InstallButton } from "@/components/pwa/InstallUI";
 import { nav, site } from "@/lib/site";
 
 export default function Header() {
@@ -59,7 +60,7 @@ export default function Header() {
       </div>
 
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300 ${
           scrolled ? "border-b border-line bg-bg/75 shadow-sm backdrop-blur-xl" : "border-b border-transparent bg-bg/0"
         }`}
       >
@@ -85,6 +86,7 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <InstallButton />
             <ThemeToggle />
             <Link href="/contact" className="btn-primary hidden !px-5 !py-2.5 sm:inline-flex">
               Get a quote <LuArrowRight className="h-4 w-4" />
@@ -128,6 +130,7 @@ export default function Header() {
               ))}
               <Link href="/contact" className="btn-primary mt-4">Get a free quote</Link>
               <a href={site.phoneHref} className="btn-ghost mt-2"><LuPhone className="h-4 w-4" /> {site.phone}</a>
+              <InstallButton variant="menu" />
             </nav>
           </motion.div>
         )}

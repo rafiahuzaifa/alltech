@@ -29,7 +29,7 @@ export default function WhatsAppButton() {
           initial={{ opacity: 0, y: 24, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 24, scale: 0.9 }}
-          className="fixed right-5 bottom-5 z-50 flex items-end gap-3"
+          className="fixed right-[max(1.25rem,env(safe-area-inset-right))] bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-50 flex items-end gap-3"
         >
           <AnimatePresence>
             {bubble && !dismissed && (

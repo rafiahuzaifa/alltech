@@ -9,6 +9,9 @@ import Providers from "@/components/site/Providers";
 import WhatsAppButton from "@/components/site/WhatsAppButton";
 import JsonLd from "@/components/site/JsonLd";
 import { themeScript } from "@/components/site/ThemeToggle";
+import { installCaptureScript } from "@/components/pwa/install";
+import ServiceWorker from "@/components/pwa/ServiceWorker";
+import { InstallBanner, InstallDialog } from "@/components/pwa/InstallUI";
 import { SITE_URL, site } from "@/lib/site";
 import { organizationLd, websiteLd } from "@/lib/seo";
 
@@ -23,6 +26,11 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  appleWebApp: { capable: true, title: "All Tech", statusBarStyle: "default" },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "64x64" }, { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" }],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+  },
   keywords: [
     "IPv4 broker",
     "buy IPv4 addresses",
@@ -72,6 +80,7 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -79,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${jakarta.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: installCaptureScript }} />
         <JsonLd data={[organizationLd, websiteLd]} />
       </head>
       <body className="min-h-dvh antialiased">
@@ -87,6 +97,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main">{children}</main>
           <Footer />
           <WhatsAppButton />
+          <InstallBanner />
+          <InstallDialog />
+          <ServiceWorker />
         </Providers>
         <Analytics />
         <SpeedInsights />
