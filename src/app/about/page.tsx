@@ -10,9 +10,9 @@ import { pageMetadata } from "@/lib/seo";
 import { fullAddress, site } from "@/lib/site";
 
 export const metadata = pageMetadata({
-  title: "About Us — APNIC-Registered IPv4 Broker Since 2019",
+  title: "About Us — IPv4 Broker Since 2019",
   description:
-    "All Tech Cloud Services is a privately held IPv4 broker headquartered in Austin, Texas. Founded in 2019, we help businesses worldwide buy, sell and lease IPv4 address space.",
+    "All Tech Cloud Services is an IPv4 broker headquartered in Austin, Texas. Since 2019 we've helped businesses worldwide buy, sell and lease IPv4 space.",
   path: "/about",
 });
 

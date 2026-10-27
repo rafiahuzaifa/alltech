@@ -28,8 +28,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const post = await getPost(slug);
   if (!post) return { title: "Article not found", robots: { index: false } };
   const description = post.description || excerpt(post.plain, 155);
+  const suffix = " | All Tech Cloud Services";
   return {
-    title: post.title,
+    // Long headlines would be truncated by Google, so drop the brand suffix for those.
+    title: post.title.length + suffix.length > 65 ? { absolute: post.title } : post.title,
     description,
     keywords: post.keywords,
     alternates: { canonical: `/blog/${post.slug}` },
@@ -41,9 +43,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt,
       authors: post.author ? [post.author] : undefined,
-      images: post.image ? [{ url: `${post.image}?w=1200&h=630&fit=crop&auto=format`, width: 1200, height: 630 }] : undefined,
+      images: [
+        post.image
+          ? { url: `${post.image}?w=1200&h=630&fit=crop&auto=format`, width: 1200, height: 630 }
+          : { url: "/opengraph-image", width: 1200, height: 630 },
+      ],
     },
-    twitter: { card: "summary_large_image", title: post.title, description },
+    twitter: { card: "summary_large_image", title: post.title, description, images: [post.image ? `${post.image}?w=1200&h=630&fit=crop&auto=format` : "/opengraph-image"] },
   };
 }
 

@@ -25,8 +25,10 @@ export function pageMetadata({
       siteName: site.name,
       type: "website",
       locale: "en_US",
+      // A page-level openGraph object replaces the root one, so the shared image must be repeated here.
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${title} — ${site.name}` }],
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { card: "summary_large_image", title, description, images: ["/opengraph-image"] },
   };
 }
 

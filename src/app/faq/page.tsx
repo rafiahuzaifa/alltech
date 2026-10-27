@@ -7,7 +7,7 @@ import { faqs } from "@/lib/faq";
 import { faqLd, pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "IPv4 & ASN FAQ — Buying, Selling, Leasing and Transfers",
+  title: "IPv4 Transfer, Leasing & ASN FAQ",
   description:
     "Answers to common questions about IPv4 addresses, IPv4 transfers, leasing, pricing, ASNs and Regional Internet Registries from the experts at All Tech Cloud Services.",
   path: "/faq",

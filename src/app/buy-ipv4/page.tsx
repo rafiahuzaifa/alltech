@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Buy IPv4 Addresses — Clean /24 to /16 Blocks",
   description:
-    "Buy clean, reputation-checked IPv4 address blocks at competitive prices. All Tech Cloud Services handles due diligence and the full ARIN, RIPE, APNIC, LACNIC or AFRINIC transfer.",
+    "Buy clean, reputation-checked IPv4 blocks at competitive prices. We handle due diligence and the full ARIN, RIPE, APNIC, LACNIC or AFRINIC transfer.",
   path: "/buy-ipv4",
   keywords: ["buy IPv4 addresses", "buy IPv4 block", "purchase IPv4", "IPv4 for sale", "buy /24 IPv4", "IPv4 address price"],
 });

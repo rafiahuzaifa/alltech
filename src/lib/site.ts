@@ -6,7 +6,7 @@ export const site = {
   legalName: "AllTechCloudServices",
   tagline: "Where Connectivity Meets Possibility",
   description:
-    "APNIC-registered IPv4 broker since 2019. Buy, sell and lease clean IPv4 address blocks across ARIN, RIPE NCC, APNIC, LACNIC and AFRINIC — fast, compliant and fully managed.",
+    "APNIC-registered IPv4 broker since 2019. Buy, sell and lease clean IPv4 blocks across ARIN, RIPE NCC, APNIC, LACNIC and AFRINIC — fast and fully managed.",
   foundingYear: 2019,
   phone: "+1 (737) 304-5613",
   phoneHref: "tel:+17373045613",

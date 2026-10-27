@@ -3,7 +3,7 @@ import { faqsFor } from "@/lib/faq";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Lease IPv4 Addresses — Delivered Within 48 Hours",
+  title: "Lease IPv4 Addresses in 48 Hours",
   description:
     "Lease clean IPv4 addresses on flexible monthly terms. Secure, stable IP blocks with LOA provided — delivered within 48 hours by All Tech Cloud Services.",
   path: "/lease-ipv4",

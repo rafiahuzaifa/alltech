@@ -7,7 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata = pageMetadata({
-  title: "IPv4 Subnet Calculator — CIDR, Netmask & Host Count",
+  title: "IPv4 Subnet & CIDR Calculator",
   description:
     "Free IPv4 subnet calculator. Enter an IP and CIDR prefix to instantly see total addresses, usable hosts, network and broadcast address, subnet mask and wildcard mask.",
   path: "/ipv4-subnet-calculator",

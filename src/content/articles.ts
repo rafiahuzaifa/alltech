@@ -150,7 +150,7 @@ export const articles: Article[] = [
     slug: "ipv4-address-price-factors",
     title: "How Much Does an IPv4 Address Cost? 6 Factors That Drive the Price",
     description:
-      "IPv4 prices vary block by block. Learn the six factors that determine what an IPv4 address costs — size, registry, reputation, demand, transfer terms and leasing vs buying.",
+      "IPv4 prices vary block by block. Learn the six factors behind what an IPv4 address costs: size, registry, reputation, demand, transfer terms and leasing.",
     publishedAt: "2026-10-26T09:00:00.000Z",
     author: AUTHOR,
     keywords: ["IPv4 price", "IPv4 address cost", "price per IP address", "IPv4 market value"],
@@ -212,7 +212,7 @@ export const articles: Article[] = [
     slug: "ipv4-leasing-explained",
     title: "IPv4 Leasing Explained: How It Works, LOA, ROA and What to Check",
     description:
-      "A practical guide to leasing IPv4 addresses: how IPv4 leases work, what an LOA and RPKI ROA are, how to announce leased space from your ASN, and what to check before you sign.",
+      "How IPv4 leasing works: what an LOA and RPKI ROA are, how to announce leased space from your ASN, and what to check before you sign a lease.",
     publishedAt: "2026-10-26T09:00:00.000Z",
     author: AUTHOR,
     keywords: ["lease IPv4 addresses", "IPv4 leasing", "IPv4 LOA", "ROA for leased IP", "rent IPv4"],
