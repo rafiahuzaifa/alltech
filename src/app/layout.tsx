@@ -12,6 +12,8 @@ import { themeScript } from "@/components/site/ThemeToggle";
 import { installCaptureScript } from "@/components/pwa/install";
 import ServiceWorker from "@/components/pwa/ServiceWorker";
 import { InstallBanner, InstallDialog } from "@/components/pwa/InstallUI";
+import LeadPopup from "@/components/leads/LeadPopup";
+import QuestionToasts from "@/components/leads/QuestionToasts";
 import { SITE_URL, site } from "@/lib/site";
 import { organizationLd, websiteLd } from "@/lib/seo";
 
@@ -97,6 +99,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main">{children}</main>
           <Footer />
           <WhatsAppButton />
+          <QuestionToasts />
+          <LeadPopup />
           <InstallBanner />
           <InstallDialog />
           <ServiceWorker />

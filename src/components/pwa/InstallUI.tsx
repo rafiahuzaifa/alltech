@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { LuDownload, LuPlus, LuShare, LuSquarePlus, LuX, LuZap, LuWifiOff, LuSmartphone } from "react-icons/lu";
 import Image from "next/image";
 import { rememberDismissal, useInstall, wasRecentlyDismissed } from "./install";
+import { claimPopup, releasePopup } from "@/components/site/popupGate";
 
 const OPEN_EVENT = "atcs:open-install";
 export const openInstallDialog = () => window.dispatchEvent(new Event(OPEN_EVENT));
@@ -147,21 +148,31 @@ export function InstallBanner() {
       return;
     }
     let done = false;
+    let retry: number | undefined;
     const reveal = () => {
       if (done) return;
+      // Another overlay (e.g. the quote popup) is open: try again shortly.
+      if (!claimPopup("install")) {
+        window.clearTimeout(retry);
+        retry = window.setTimeout(reveal, 15000);
+        return;
+      }
       done = true;
       setShow(true);
       cleanup();
     };
-    const onScroll = () => window.scrollY > 900 && reveal();
-    const timer = window.setTimeout(reveal, 25000);
-    window.addEventListener("scroll", onScroll, { passive: true });
+    // Time-based only (no scroll trigger), so the quote popup gets the first chance to appear.
+    const timer = window.setTimeout(reveal, 45000);
     const cleanup = () => {
       window.clearTimeout(timer);
-      window.removeEventListener("scroll", onScroll);
+      window.clearTimeout(retry);
     };
     return cleanup;
   }, [canInstall, pathname]);
+
+  useEffect(() => {
+    if (!show || !canInstall) releasePopup("install");
+  }, [show, canInstall]);
 
   const dismiss = () => {
     rememberDismissal();
