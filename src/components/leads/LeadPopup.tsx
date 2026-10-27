@@ -20,14 +20,14 @@ import {
 import { claimPopup, releasePopup } from "@/components/site/popupGate";
 
 /*
- * Lead-capture popup. Opens at most once per visit and only when the visitor shows intent:
- *  - desktop: exit intent (pointer leaves through the top of the window) after ≥ 8 s on the site
- *  - touch devices: ≥ 40 s on the site and ≥ 40 % of the current page read
- * Closing it snoozes it for 7 days; sending a request snoozes it for 90 days.
+ * Lead-capture popup. Opens automatically on every visit, OPEN_DELAY ms after the visitor lands,
+ * and at most once per visit (browser session) so it doesn't reappear on every page they open.
+ * Not shown on SKIP_PATHS or while the visitor is typing in a form (it waits and retries instead).
  */
 
-const SNOOZE_KEY = "atcs-lead-snooze-until";
-const START_KEY = "atcs-visit-start";
+const OPEN_DELAY = 6000;
+const RETRY_EVERY = 5000;
+const SHOWN_KEY = "atcs-lead-shown"; // sessionStorage: cleared when the visit (browser session) ends
 const SKIP_PATHS = ["/contact", "/studio", "/privacy-policy"];
 
 type Service = "buy" | "sell" | "lease";
@@ -40,26 +40,17 @@ const SERVICES: { id: Service; title: string; text: string; icon: typeof LuShopp
 ];
 const SIZES = ["/24 (256 IPs)", "/23 (512 IPs)", "/22 (1,024 IPs)", "/21 (2,048 IPs)", "/20 or larger", "Not sure yet"];
 
-const snooze = (days: number) => {
+const shownThisSession = () => {
   try {
-    localStorage.setItem(SNOOZE_KEY, String(Date.now() + days * 864e5));
+    return sessionStorage.getItem(SHOWN_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+const markShown = () => {
+  try {
+    sessionStorage.setItem(SHOWN_KEY, "1");
   } catch {}
-};
-const isSnoozed = () => {
-  try {
-    return Date.now() < Number(localStorage.getItem(SNOOZE_KEY) || 0);
-  } catch {
-    return true; // storage blocked: stay quiet rather than risk showing it on every page
-  }
-};
-const secondsOnSite = () => {
-  try {
-    let start = Number(sessionStorage.getItem(START_KEY));
-    if (!start) sessionStorage.setItem(START_KEY, String((start = Date.now())));
-    return (Date.now() - start) / 1000;
-  } catch {
-    return 0;
-  }
 };
 
 export default function LeadPopup() {
@@ -76,48 +67,41 @@ export default function LeadPopup() {
     formState: { errors, isSubmitting },
   } = useForm<Values>({ defaultValues: { size: "" } });
 
-  const show = useCallback(() => {
-    if (shownThisVisit.current || isSnoozed()) return;
-    if (SKIP_PATHS.some((p) => pathname.startsWith(p))) return;
+  /** Returns true once the popup has been shown (or no longer needs to be). */
+  const tryShow = useCallback(() => {
+    if (shownThisVisit.current || shownThisSession()) return true;
+    if (SKIP_PATHS.some((p) => pathname.startsWith(p))) return false;
     // Don't interrupt someone already filling in a form on the page.
     const active = document.activeElement;
-    if (active && active.closest("form")) return;
-    if (!claimPopup("lead")) return;
+    if (active && active.closest("form")) return false;
+    if (!claimPopup("lead")) return false;
     shownThisVisit.current = true;
+    markShown();
     setOpen(true);
+    return true;
   }, [pathname]);
 
-  // Triggers
+  // Auto-open on every visit, a few seconds after landing.
   useEffect(() => {
-    secondsOnSite(); // starts the visit clock on first page
-    const touch = window.matchMedia("(pointer: coarse)").matches;
-
-    const onLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !e.relatedTarget && secondsOnSite() >= 8) show();
+    try {
+      localStorage.removeItem("atcs-lead-snooze-until"); // left over from the earlier 7-day snooze
+    } catch {}
+    if (shownThisVisit.current || shownThisSession()) return;
+    let retry: number | undefined;
+    const attempt = () => {
+      if (!tryShow()) retry = window.setTimeout(attempt, RETRY_EVERY);
     };
-    const check = () => {
-      const doc = document.documentElement;
-      const read = (window.scrollY + window.innerHeight) / Math.max(doc.scrollHeight, 1);
-      if (secondsOnSite() >= 40 && read >= 0.4) show();
+    const first = window.setTimeout(attempt, OPEN_DELAY);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(retry);
     };
-
-    if (touch) {
-      const timer = window.setInterval(check, 5000);
-      window.addEventListener("scroll", check, { passive: true });
-      return () => {
-        window.clearInterval(timer);
-        window.removeEventListener("scroll", check);
-      };
-    }
-    document.addEventListener("mouseout", onLeave);
-    return () => document.removeEventListener("mouseout", onLeave);
-  }, [show]);
+  }, [tryShow]);
 
   const close = useCallback(() => {
     setOpen(false);
     releasePopup("lead");
-    if (!sent) snooze(7);
-  }, [sent]);
+  }, []);
 
   // Escape to close, focus the dialog for keyboard and screen-reader users
   useEffect(() => {
@@ -148,7 +132,6 @@ export default function LeadPopup() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Something went wrong");
       setSent(true);
-      snooze(90);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not send. Please try again.");
     }
